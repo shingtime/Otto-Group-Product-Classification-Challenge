@@ -1,0 +1,165 @@
+---
+title: "Untitled"
+author: "Xuesi Feng 999492046"
+date: "June 4, 2015"
+output: pdf_document
+---
+
+
+##Theoratical background
+
+###Multinomial Naive Bayes
+
+Assume there are $m$ features and $n$ classes in the dataset. Also assume that in the dataset, each cell corresponds to the count of features. In such a situation, multinomial naive bayes could be applied. Let $\mathbf{x}_k$ be the feature vector, i.e. the occurances of each feature on $kth$ class, and assume that for all the features in the feature vector $\mathbf{x}_k$, the features are independent. Then according to the Bayes Theorem, we have:
+$$p(C_k|\mathbf{x}_k) = \frac{p(C_k)p(\mathbf{x}_k)}{p(\mathbf{x})} \propto p(C_k)p(\mathbf{x}_k)$$
+Also assume that for any sample in the dataset, with the $k$th class given, then for each feature in the feature vector $\mathbf{x}_k$, the feature is independent and obeys multinomial distribution; i.e. 
+$$\mathbf{x}_k \sim Multinomial(p_{1k}, p_{2k}, \cdots, p_{mk})$$
+Thus the posterior probability satsifies:
+$$p(C_k|\mathbf{x}_k) \propto p(C_k) \frac{(\sum\limits_{i=1}^m x_i)!}{\prod\limits_{i=1}^m x_i !} \prod\limits_{i=1}^m {p_i}^{x_i} \propto p(C_k)\prod\limits_{i=1}^m {p_{ik}}^{x_{ik}}$$
+Consider the whole dataset, the posterior probability is:
+$$p(\mathbf{C}|\mathbf{X}) \propto \prod\limits_{k=1}^n (p(C_k)\prod\limits_{i=1}^m {p_{ik}}^{x_{ik}})$$
+According to the maximum a posteriori rule, and take logarithm of the both side, we have:
+$$p = \max\limits_{p} \sum\limits_{k = 1}^n\log p(C_k) + \sum\limits_{k=1}^n\sum\limits_{i=1}^m x_{ik}log(p_{ik}) $$
+Take 1st order derivative of the target function and set it to 0, and solve the formulas using Lagrange multipliers, we have for given $j$th feature on $kth$ class, 
+$$\hat{p}_{jk} = \frac{x_{jk}}{x_{\cdot k}}$$
+Where $x_{\cdot k} = \sum\limits_{j=1}^{m} x_{jk}$. Also, in order to deal with unobserved class, apply Laplace smoothing on the classifier, i.e. 
+$$\hat{p}_{jk} = \frac{x_{jk} + 1}{x_{\cdot k} + n}$$
+
+###Multilayer Neural Network
+
+Inspired by biological neural networks, people invented neural network technologies.
+
+####sigmoid functions, softmax functions and regressions
+In general, sigmoid functions are functions which has S-shape curve, if plotted on the 2D space. The most commonly used sigmoid functions include:
+$$f(\mathbf{x}) = \frac{1}{1+e^{(-\mathbf{w}^T\mathbf{x})}}$$
+$$f(\mathbf{x}) = \tanh(\mathbf{w}^T\mathbf{x})$$
+Both of these two functions have S-shape curve, for example:
+
+```{r, echo=FALSE}
+par(mfrow = c(2, 2))
+curve(1/(1+exp(-4*x)), -3, 3, ylab = 'f(x)', xlab = 'x')
+title('logistic')
+curve(tanh(3*x), -3, 3, ylab = 'f(x)', xlab = 'x')
+title('hypobolic tangent')
+par(mfrow = c(1, 1))
+
+```
+The difference is, first function(also called logistic function) maps $[-\infty, \infty]$ to $[0, 1]$, and the second function(also called hyperbolic tangent function) maps $[-\infty, \infty]$ to $[-1, 1]$. In neural networks, these functions are also used as binary classifiers because of their S-shaped curve. However, logistic function is more commonly used, since the output can be explained as probabilities of the observation falling in some specified class. In this case, logistic regression, which aims to find the "best" parameter vector $\mathbf{w}$(determined by KL-divergence), can be used as a 1-0 classifier.
+
+Similarily, softmax function, which is defined as:
+$$f_k(\mathbf{x}) = \frac{e^{\mathbf{w}_k^T\mathbf{x}}}{\sum\limits_{i=1}^n{e^{\mathbf{w}_i^T\mathbf{x}}}}$$
+This function is also called "multinomial logistic regression". Aiming at finding the best parameter matrix $\mathbf{W}$ minimizing the KL divergence, tt can be applied in $n$-class classcification. 
+
+The difference of logistic regression and softmax regression is: logistic regression is used as 1-0 classifier; That is, to predict "whether the given point falling to some specific class". Under such circumstance, given $n$ classes, the point can fall into $k$ classes, $k \geq 1$, and these classes are not exclusive. But the softmax regression is used as a $n$ classifier to predict "which exactly one class will the given point fall into", and classes are "exclusive". 
+
+###Multilayer Neural Networks
+[image]: NN.png "simarities" 
+Inspired by the structure of biological neural networks, people invented multilayer neural networks, also called multilayer perceptrons. As the picture shows here:
+
+![][image] 
+
+http://electronicsnewsline.com/819/biological-neural-network-and-artificial-neural-network-a-comparison.html 
+
+Each neuron can be simulated as a logistic function, with
+
+- dendrite as input from the outputs of other logistic functions;
+- cell body as the activation function, often logistic function;
+- axon as output from the logistic function;
+- terminal axons as connections to neighbors of other logistic functions.
+
+In this project, the fully connected multilayer neural network is adopted.  Take the example shown in delta subplot in the above plot, the three layer fully connected multilayer neural network can be expressed as follows in a mathematical way:
+
+$$f(\mathbf{x}) = f_3(\mathbf{W}_3f_2(\mathbf{W}_2(f_1(\mathbf{W}_1\mathbf{x}) + \mathbf{b}_1) + \mathbf{b}_2) + \mathbf{b}_3)$$
+
+Where $\mathbf{W}_1$, $\mathbf{W}_2$, $\mathbf{W}_3$ are 3x3 weight matrices, $\mathbf{b}_1$, $\mathbf{b}_2$, $\mathbf{b}_3$ are 3x1 biases, $f_1$, $f_2$ are sigmoid activation functions, and $f_3$ is the output softmax function, used as $n$-classifier.
+
+As for training algorithm, greedy back-propagation algorithm are often used. The main idea is:
+
+- perform a feed forward pass for each level, until it reaches the output.
+- calculate the errors of output layer.
+- backpropagate the errors, calculated the errors that each level should be responsible for.
+- using gradient descent to tune the parameters for the level that the back-propagated errors reach.
+
+In neural network training, such a procedure is also called an epoch.
+Limited by the number of pages in requirement, the mathematical deductions are omitted here. 
+
+##Analysis
+
+###Multinomial Naive Bayes
+In python, scikit-learn package provides mature Multinomial Naive Bayes training algorithm.
+Using Multinomial Naive Bayes algorithm to make the prediction, and compare that with real classfication result, we can find that the error rate is around 66.6%. That is, some assumptions in Multinomial Naive Bayes does not hold.
+
+###Multilayer Nerual Network
+GPU can significantly increase the speed of multilayer neural network training; However, it is painful to use CUDA or OpenCL to build hardware-accelerated neural networks, since people need to deal with a lot of lower level details to build a robust and fast neural network. However in python, package Lasange, which based on package Theano, provides quite a good abstraction of neural network building procedures, thus makes it more friendly to build GPU accelerated neural networks.
+
+All the neural networks are trained for 40 epochs.
+
+Here is different accuracy rates v.s. number of epochs plot, given 4 neural networks with different number of levels:
+
+```{r, echo=FALSE}
+net1 = c(68.06, 71.04, 72.29, 73.04, 73.77, 74.24, 74.60, 74.88, 75.19, 75.43, 75.60, 75.72, 75.93, 76.12, 76.22, 76.41, 76.41, 76.51, 76.54, 76.61, 76.70, 76.72, 76.79, 76.87, 76.91, 77.03, 77.03, 77.14, 77.26, 77.31, 77.33, 77.40, 77.44, 77.55, 77.57, 77.58, 77.57, 77.57, 77.63, 77.61)
+net2 = c(68.89, 71.34, 72.50, 73.13, 73.31, 74.32, 74.74, 75.03, 75.31, 75.53, 75.90, 76.12, 76.28, 76.45, 76.59, 76.65, 76.76, 76.88, 77.11, 77.20, 77.24, 77.37, 77.42, 77.47, 77.58, 77.65, 77.75, 77.91, 78.01, 78.13, 78.15, 78.17, 78.28, 78.36, 78.40, 78.46, 78.54, 78.55, 78.58, 78.62)
+net3 = c(68.47, 72.01, 73.29, 73.93, 74.59, 75.01, 75.58, 76.08, 76.48, 76.72, 77.02, 77.08, 77.37, 77.59, 77.75, 77.86, 77.91, 78.03, 78.15, 78.33, 78.29, 78.36, 78.42, 78.43, 78.47, 78.53, 78.62, 78.68, 78.73, 78.78, 78.83, 78.85, 78.89, 78.87, 78.87, 78.82, 78.96, 79.05, 78.98, 79.02)
+net4 = c(67.85, 71.46, 73.06, 73.78, 74.26, 74.73, 75.40, 75.72, 76.02, 76.16, 76.43, 76.69, 76.84, 77.06, 77.24, 77.37, 77.52, 77.72, 77.78, 77.82, 77.90, 77.94, 77.96, 78.02, 78.07, 78.12, 78.18, 78.28, 78.25, 78.33, 78.42, 78.54, 78.52, 78.62, 78.68, 78.65, 78.67, 78.69, 78.73, 78.77)
+plot(x = 1:length(net3), y = net3, type = 'n', ylab = "accuracy(percent)", xlab = "number of epochs")
+lines(x = 1:length(net2), y = net2, col = 'blue')
+lines(x = 1:length(net1), y = net1, col = 'red')
+lines(x = 1:length(net3), y = net3, col = 'green')
+lines(x = 1:length(net4), y = net4, col = 'black')
+title('valid. acc. v.s. num. of epochs for NN with different levels')
+legend("bottomright", lty = 1, col = c('blue', 'red', 'green', 'black'), 
+       legend = c("net1", "net2", "net3", 'net4'))
+```
+
+The structures of these four neural networks are as follows:
+
+ - Net0: 1 layer neural network with 256 units and the output softmax layer;
+ - Net1: 2 layer neural network with 256 units in the first layer, 512 units in the second layer and the output softmax layer;
+ - Net2: 3 layer neural network with 256 units in the first layer, 512 units in the second layer, 256 units in the third layer and the output softmax layer;
+ - Net3: 3 layer neural network with 256 units in the first layer, 512 units in the second layer, 256 units in the third layer, 256 units in the 4th layer and the output softmax layer.
+ 
+It is not hard to find out that as the number of layers increases, the validation accuracy is not necessary increase. From this, it is also reasonable to assume that as the number of layer increases, the performance of neural network does not necessary goes better.
+
+In order to add some sparsity, the dropout layer is introduced. this layer is designed to dropout some "unnecessary" connections randomly, so that there won't be overfitting.
+
+Here is different accuracy rates v.s. number of epochs plot, plotted.
+
+```{r, echo=FALSE}
+neta = c(68.47, 72.01, 73.29, 73.93, 74.59, 75.01, 75.58, 76.08, 76.48, 76.72, 77.02, 77.08, 77.37, 77.59, 77.75, 77.86, 77.91, 78.03, 78.15, 78.33, 78.29, 78.36, 78.42, 78.43, 78.47, 78.53, 78.62, 78.68, 78.73, 78.78, 78.83, 78.85, 78.89, 78.87, 78.87, 78.82, 78.96, 79.05, 78.98, 79.02)
+netb = c(74.78, 76.14, 77.12, 77.63, 77.68, 78.25, 78.19, 78.62, 78.78, 78.89, 79.02, 79.02, 79.24, 79.33, 79.12, 79.52, 79.44, 79.55, 79.60, 79.58, 79.48, 79.90, 79.74, 79.87, 79.71, 80.07, 79.90, 80.01, 79.80, 80.01, 79.76, 79.98, 80.16, 80.21, 80.19, 80.20, 80.26, 80.22, 80.04, 80.17)
+plot(x = 1:length(netb), y = netb, type = 'n', ylab = "accuracy(percent)", xlab = "number of epochs", ylim = c(min(neta), max(netb)))
+lines(x = 1:length(netb), y = netb, col = 'blue')
+lines(x = 1:length(neta), y = neta, col = 'red')
+title('valid. acc. v.s. num. of epochs for NN with/without dropout layers')
+legend("bottomright", lty = 1, col = c('blue', 'red'), 
+       legend = c("net1", "net2"))
+```
+
+Net0 is the best model in the previous plot, and Net1 is the neural network with layer neural network with 256 units in the first layer and dropout layer, 512 units in the second layer and dropout layer, 256 units in the third layer and the output softmax layer.
+According to the plot, adding the dropout layer indeed improves the performance of the neural network.
+
+```{r, echo=FALSE}
+sgd = c(67.11, 70.95, 72.13, 73.18, 73.73, 74.08, 74.60, 74.89, 75.07, 75.42, 75.51, 75.78, 76.03, 76.39, 76.28, 76.53, 76.58, 76.68, 76.75, 76.89, 76.99, 76.98, 77.22, 77.18, 77.28, 77.24, 77.56, 77.53, 77.44, 77.79, 77.93, 77.78, 77.76, 77.96, 77.93, 78.05, 78.09, 78.14, 78.10)
+nesterov_momentum = c(74.78, 76.14, 77.12, 77.63, 77.68, 78.25, 78.19, 78.62, 78.78, 78.89, 79.02, 79.02, 79.24, 79.33, 79.12, 79.52, 79.44, 79.55, 79.60, 79.58, 79.48, 79.90, 79.74, 79.87, 79.71, 80.07, 79.90, 80.01, 79.80, 80.01, 79.76, 79.98, 80.16, 80.21, 80.19, 80.20, 80.26, 80.22, 80.04, 80.17)
+adagrad = c(76.79, 77.80, 78.04, 78.08, 78.66, 78.57, 78.91, 78.95, 79.23, 79.33, 79.32, 79.34, 79.55, 79.44, 79.72, 79.55, 79.56, 79.79, 79.75, 79.99, 79.83, 79.86, 79.96, 79.96, 79.79, 80.01, 79.96, 80.13, 80.11, 79.87, 80.25, 80.10, 80.12, 80.17, 80.24, 80.39, 80.47, 80.60, 80.35, 80.34)
+rmsprop = c(78.58, 77.28, 78.26, 76.27, 78.12, 77.02, 76.55, 76.04, 76.83, 77.23, 76.10, 75.57, 77.96, 76.87, 77.69, 78.30, 76.14, 76.46, 75.14, 76.53, 76.06, 74.04, 74.12, 76.28, 74.72, 77.31, 76.97, 77.82, 76.61, 76.84, 75.88, 76.65, 74.17, 72.86, 75.91, 75.13, 76.20, 76.36, 75.63, 77.43)
+plot(x = 1:length(rmsprop), y = rmsprop, type = 'n', ylab = "accuracy(percent)", xlab = "number of epochs", ylim = c(min(sgd), max(adagrad)))
+lines(x = 1:length(sgd), y = sgd, col = 'blue')
+lines(x = 1:length(nesterov_momentum), y = nesterov_momentum, col = 'red')
+lines(x = 1:length(adagrad), y = adagrad, col = 'green')
+lines(x = 1:length(rmsprop), y = rmsprop, col = 'black')
+legend("bottomright", lty = 1, col = c('blue', 'red', 'green', 'black'), 
+       legend = c("sgd", "nesterov_momentum", "adagrad", "rmsprop"))
+title("valid. acc. v.s. num. of epochs for NN with different gradient descent algorithm")
+```
+
+From this plot, we can find that different gradient descent algorithm performs different. The rmsprop algorithm performs worst, both nesterov momentum and the adagrad performs best.
+
+The best accuracy rate for the best trained neural network is 80.4%.
+
+###possible improvement
+Since the meaning of features are unknown, the Bayesian Network method cannot be applied to the method. With the meaning of the features known, the Bayesian Network can be built, which may provide better predictions.
+
+
+
+

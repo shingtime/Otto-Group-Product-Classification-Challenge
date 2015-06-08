@@ -1,0 +1,99 @@
+---
+title: "STA 242 KNN SVM Report"
+author: "Mutian Niu (999529375)"
+date: "June 6, 2015"
+output: pdf_document
+---
+
+###\large Method Backgrounds
+
+### \textit{k-nearest Neighbour (k-NN)}
+
+The k-NN algorithm is one of the most widely used classification techniques and probably the simpliest that is often applied to some pattern recognition problems. It is a relatively simple algorithm that imput all available training cases and then classifies a new case based on a majority vote of its neighbors according to the distance. A case will be assigned to the class that most of its k nearest neighbors belonging to, for instance, k = 1 means that the object is simply assgined to the class of that simgle nearest neighbors (k is a positive integer). 
+
+Along with the easy rule, different distance functions and value of k will affect the performance of the classification. There are different distance measures, such as euclidean, maximum, manhattan, canberra, and minkowski etc,. In this project, we conducted k-NN using only eculidean distance function. In addition, we were also trying different k values to find the optimal number of neighbors which help to get the smallest error rate, or mean square error.
+
+ - \textit{Euclidean}: usual square distance between the two vectors.
+ $$\sqrt {\sum_{i=1}^k (x_i - y_i)^2}$$
+
+\begin{figure}
+\centering
+\includegraphics[width=.75\linewidth]{figure_svm} 
+\caption{2D-points classification separating by straight line (Andrew Ng)} 
+\label{myFigure} 
+\end{figure}
+
+### \textit{Support Vector Machine (SVM)}
+
+Support Vector Machine (SVM) is a discriminative classifier formally defined by a separating hyperplane which is among the best “off-the-shelf” supervised learning algorithm. It constructs a hyperplane or set of hyperplanes in future space given labeled training data set, and it outputs the optimal hyperplane(s) which categorizes new case in order to achieve the classfication. For example, as shown on Figure.1, a linearly separable set of 2D-points which belong to one of two classes, a separating straight line is helping us label A, B, and C. (Due to the limitation of report length, we would not show the entile algorithm of SVM.)
+
+As the enlarge of dimentional space, the calculation of feature mappings increased dramaticlly. In order keep the computational load reasonable and avoid high-dimention calculation, the feature mappings used by SVM schemes are designed to ensure that dot products being inexpensive to calculate, by defining a kernel funtion $K(x,z)$ selected to suit different problems. In this case, we were trying SVM with,
+
+ - \textit{Linear}: $K(x,z) = \langle x, z\rangle$ 
+ 
+ - \textit{Polynomial (quadratic)}: $K(x,z) = (\langle x, z\rangle + R)^d$
+ 
+ - \textit{Radial (Gaussian, degree = 2)}: $K(x,z) = exp(- \frac {||x_1 - x_2||^2}{2 \sigma^2})$ 
+
+
+###\large Application and Resutls
+
+### \textit{k-NN}
+
+Since all predictor variables are continuous, here we can apply k-NN algorithm through an R packages "FNN", which runs the nearest neighbor more efficiently than the packages "class". We split the standardized dataset into training and test sets at a 80:20 ratio. Also, we made use of 5-fold cross validation in order to reduce the random errors and mostly utilize the samples. 
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+load("knn_rate.Rdata")
+K = c(1:30)
+cv_knn = colMeans(knn_rate)
+
+# best k
+best_k = which(cv_knn == min(cv_knn))
+
+# plot best k
+plot(K, cv_knn, ylab = "Test Classification Error Rate", xlab = "K", 
+     main = "Error Rate Vs. K (k-NN)")
+lines(K, cv_knn)
+abline(min(cv_knn), 0, col = "red")
+```
+
+\begin{center}
+$Figure.2:\ Misclassification\ Rate\ over\ Different\ K\ Values$
+\end{center} 
+
+K value ranges from 1 to 30 was conducted to find the optimal k. As shown on Figure.2, the misclassification rate decreases as the increasing of k value then starts increasing after reaching the trough (as maked in red line). From cross-validation, it seems that we shall select k = 11 as for the best fit model which minimize the cross validation error rate. However, k = 5 also gave a pretty close error rate. Hence, we tried to fit both k = 5 and 11 in order to pick the best model. 
+
+\begin{table}[h]
+\centering
+\caption{Error Rate for k-nearest Neighbor}
+\label{my-label}
+\begin{tabular}{|l|c|}
+\hline
+k-NN   & Test Misclassification Rate \\ \hline
+k = 5  & 0.2310116                   \\ \hline
+k = 11 & 0.2313348                   \\ \hline
+\end{tabular}
+\end{table}
+
+Then we used the cross validation result to predict the testset and we got a relatively good error rate for both k = 5 and k = 11, as shown on Table.2. Indicating that both k-NN models were performing pretty stable between training set and test set, error rate around 0.23. Due to the limitition of computation time, we only conduct the distance between each case using Euclidean distance. However, it is also interesting to try different distance functions and compare their performance in future work such as manhattan, canberra, and minkowski etc,.
+
+
+### \textit{SVM}
+
+Here we also introduced SVM to classify test dataset. Though SVM is far from being the panecea, it indeed provides intuitive representation of data partitioning and outlier detection. As for the given predictors, since we had no reason dropping any predictors, we took all the predictors into considerations. The implementation of SVM method was efficiently accomplished through **e1071** package in R.
+
+\begin{table}[h]
+\centering
+\caption{Error Rate for Support Vector Machine}
+\label{my-label}
+\begin{tabular}{|l|c|c|c|}
+\hline
+SVM                    & Gamma & Cost & Error Rate \\ \hline
+Linear                 & 0.01  & 0.2  & 0.2327     \\ \hline
+Gaussian               & 0.01  & 10   & 0.2015     \\ \hline
+Polynomial (Quadratic) & 0.1   & 0.3  & 0.2222     \\ \hline
+\end{tabular}
+\end{table}
+
+Here in the table are the cross-validation results of best models using linear, Gaussian, and polynomial (quadratic) kernels. A good numbers of parameters were tuned using 5-fold cross validation in order to reduce the random errors. Apparently, the misclassification rate of the test cases were relatively similar. Out of all three SVMs, Gaussian kernel in SVM seems to proform the best, has a 0.20 error rate (with gamma = 0.01, cost = 10). However, we may not maximize the potential of SVM method 100% since we didn't train all the possible parameters. In addition, higher order polynomial kernals were not applied here which might also be a possiblity of increasing the prediction accuracy.
+

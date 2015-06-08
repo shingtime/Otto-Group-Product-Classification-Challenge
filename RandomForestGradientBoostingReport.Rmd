@@ -1,0 +1,280 @@
+---
+title: "242_project"
+author: "Junxiao Bu"
+date: "June 6, 2015"
+output: pdf_document
+fontsize: 12pt
+
+---
+
+\newpage
+
+
+
+## Method Description
+
+For this part, we mainly implment three ensemble methods to predict the classes of our dataset. There
+are two types of ensemble methods. 
+
+The first type is average methods. The principle of these kinds ofmethods is to build several 
+independently estimators and then to average their predictions.Generally, the combination of estimator
+has better performance than the single estimator. Specificlly, for this problem, we use \textbf{random forest} and 
+\textbf{Extra trees} to fit a number of decision tree classifiers on the dataset and use averaging to 
+improve the predictive accuracy and control over-fitting.
+
+
+The second type is boosting methods. In these kinds of methods, base estimators are built sequentially
+and we tries to reduce the bias of the combined estimators. The important feature is that we tries to
+combine several weak models to generate an better combined model.Specificlly, for this problem, we use
+\textbf{GradientBoosting} to build a additive decision model.We optimize the model by calculating 
+the negative gradient of the multinomial deviance loss function.
+
+
+
+
+### Random Forest
+
+
+The \textbf{Random Forest} algorithm provides an improvement over bagged trees by way of a small 
+tweak that decorrelates the trees. This reduces the variance when we average the trees. 
+In this method, we build a number of decision trees on bootstrappedtraining samples.But when building
+these decision trees, each time a random selection of m predictors is chosen as split candidates from
+the full set of p predictors.
+
+
+### Extra Trees
+
+
+
+The \textbf{Extra Trees} Trees algorithm builds an ensemble of unpruned decision or regression trees
+according to the classical top-down procedure. Its two main differences with \textbf{Random Forest}
+method is that it splits nodes by choosing cut-points fully at random and that it uses the whole 
+learning sample (rather than a bootstrap sample) to grow the trees.
+
+
+### Gradient Boosting
+
+Unlike in bagging, in boosting we fit the tree to the entire training set, but adaptively weight the 
+observations to encourage better predictions for points that were previously misclassified.we weight 
+misclassified observations in such a way that they get properly classified in future iterations.
+
+
+
+## Diifference between methods
+
+
+### Difference between **Random Forest** and **Gradient Boosting**
+
+**Random Forest** are trained with random sample of data  and it trusts randomization to have better generalization performance on out of train set. On the other hand, **Gradient Boosting** tries to find optimal linear combination
+of trees(final model is the weighted sum of individual tree's prediction). 
+
+We know that error can be composited from bias and variance. A too complex model has low bias but large variance, while a too simple model has low variance but large bias, both leading a high error but two different reasons. As a result, two different ways to solve the problem come into people's mind, variance reduction for a complex model, or bias reduction for a simple model, which refers to **Random forest** and **Gradient Boosting**.
+
+Besides, the computational speed of **Random Forest** is faster. **Random Forest** is easily run in 
+parallel, whereas **Gradient Boosting** only run sequentially. If we have limitted computational resources,
+we may have to implement **Random Forest**. 
+
+ 
+### Difference between **Random Forest** and **Extra Trees**
+
+From the bias-variance point of view, the rationale behind the **Extra Trees** method is that
+the explicit randomization of the sample with ensemble averaging should be able to reduce variance 
+more strongly than the weaker randomization schemesused by other methods. The usage of the full 
+original learning sample rather than bootstrap samples is motivated in order to minimize bias.
+
+
+
+
+
+## Results
+
+For this project, we use **scikit-learn** module in Python to fit these three tree-based models.Our
+task is to classify observations into 9 classes. There are 93 features in total. For all of the three
+methods, we randomly choose $\sqrt{93} \approx 9$ features as our predictors. In order to reduce the 
+over-fitting problem, we constrain the **number of trees** to 100.
+
+The figure that shows the test misclassification rates across different number of trees is below.
+
+\medskip
+
+```{r,echo = FALSE}
+
+#### misclassification rate of random forest
+length_randomforest = seq(1,100,by=1)
+
+miss_randomforest = c(0.29941357162803683, 0.24903658196034628, 0.20960625523596765, 0.19357721306897513, 
+                      0.17933538117844172, 0.17257749232058084, 0.1717397375034907, 0.16939402401563808, 
+                      0.16520524993018715, 0.16392069254398212, 0.16336218933258861, 0.16347388997486734, 
+                      0.16068137391790005, 0.16123987712929344, 0.16017872102764585, 0.1598436191008098, 
+                      0.15973191845853119, 0.15878246299916221, 0.15844736107232615, 0.15895001396258024, 
+                      0.15632504886903098, 0.15682770175928507, 0.1563808991901704, 0.15576654565763748, 
+                      0.15504049148282606, 0.15565484501535887, 0.15509634180396537, 0.15682770175928507, 
+                      0.15621334822675226, 0.15733035464953926, 0.15677185143814576, 0.15721865400726054, 
+                      0.1569952527227032, 0.15682770175928507, 0.15604579726333423, 0.15649259983244901, 
+                      0.15632504886903098, 0.1564367495113097, 0.15716280368612123, 0.15682770175928507, 
+                      0.15716280368612123, 0.15598994694219492, 0.15693940240156379, 0.15716280368612123, 
+                      0.15598994694219492, 0.1558223959787769, 0.15649259983244901, 0.1564367495113097, 
+                      0.1563808991901704, 0.15682770175928507, 0.15682770175928507, 0.15721865400726054,
+                      0.15677185143814576, 0.15666015079586704, 0.15693940240156379, 0.15649259983244901, 
+                      0.15626919854789167, 0.1569952527227032, 0.15733035464953926, 0.15766545657637532, 
+                      0.15738620497067857, 0.15733035464953926, 0.15800055850321137, 0.15766545657637532, 
+                      0.15760960625523601, 0.15822395978776882, 0.15800055850321137, 0.15783300753979335, 
+                      0.1581681094666294, 0.15850321139346546, 0.1586707623568836, 0.1586707623568836, 
+                      0.1586707623568836, 0.15900586428371966, 0.15861491203574418, 0.15861491203574418, 
+                      0.15878246299916221, 0.15900586428371966, 0.15900586428371966, 0.15911756492599838, 
+                      0.15855906171460488, 0.15839151075118685, 0.15911756492599838, 0.15917341524713768, 
+                      0.15906171460485896, 0.1598436191008098, 0.15956436749511305, 0.15945266685283443, 
+                      0.15967606813739177, 0.15973191845853119, 0.15939681653169502, 0.15939681653169502, 
+                      0.15917341524713768, 0.15962021781625246, 0.15950851717397374, 0.15917341524713768, 
+                      0.15939681653169502, 0.15939681653169502, 0.15973191845853119, 0.15928511588941641)
+
+#### misclassificatio rate of Extra trees
+
+length_Extratrees = seq(1,100,by=1)
+
+miss_Extratrees = c(0.45540351857023176, 0.3714046355766546, 0.32683607930745606, 0.31248254677464393, 
+                      0.3048869030996928, 0.28986316671320855, 0.28042446244065899, 0.27740854509913437, 
+                      0.28020106115610166, 0.27662664060318343, 0.27651493996090482, 0.27377827422507683, 
+                      0.27266126780228983, 0.27361072326165881, 0.27333147165596205, 0.27534208321697851, 
+                      0.27439262775760964, 0.27009215302987988, 0.26919854789165043, 0.26819324211114215, 
+                      0.2673554872940519, 0.26417201898910914, 0.26534487573303545, 0.26590337894442895, 
+                      0.26662943311924048, 0.26372521641999447, 0.26216140742809269, 0.26311086288746155, 
+                      0.26294331192404352, 0.26193800614353535, 0.26137950293214185, 0.26121195196872382, 
+                      0.2593688913711254, 0.25953644233454343, 0.25908963976542865, 0.25685562691985475, 
+                      0.25601787210276461, 0.25618542306618264, 0.25607372242390392, 0.25640882435073997, 
+                      0.25635297402960067, 0.25640882435073997, 0.25735827981010895, 0.25774923205808431, 
+                      0.26015079586707623, 0.25987154426137948, 0.25975984361910076, 0.26065344875733032, 
+                      0.26059759843619101, 0.26070929907846974, 0.25998324490365821, 0.25970399329796146, 
+                      0.25897793912314993, 0.25931304104998609, 0.25948059201340412, 0.25953644233454343,
+                      0.25948059201340412, 0.25948059201340412, 0.25925719072884668, 0.25920134040770737, 
+                      0.25869868751745317, 0.25864283719631387, 0.25869868751745317, 0.25836358559061712, 
+                      0.25791678302150234, 0.25847528623289584, 0.25825188494833851, 0.25847528623289584, 
+                      0.25892208880201062, 0.25914549008656795, 0.25908963976542865, 0.25892208880201062, 
+                      0.25847528623289584, 0.25875453783859259, 0.25864283719631387, 0.25825188494833851, 
+                      0.25780508237922373, 0.25903378944428934, 0.25869868751745317, 0.25836358559061712,
+                      0.25869868751745317, 0.25853113655403515, 0.25825188494833851, 0.25802848366378106, 
+                      0.25774923205808431, 0.257693381736945, 0.25746998045238756, 0.2571348785255515, 
+                      0.25719072884669092, 0.25730242948896953, 0.25663222563529742, 0.25674392627757614,
+                      0.25696732756213347, 0.25746998045238756, 0.25746998045238756, 0.25808433398492037, 
+                      0.25814018430605978, 0.25797263334264176, 0.25741413013124825, 0.25780508237922373)
+
+
+
+
+#### misclassification rate of gradient boosting
+
+length_boosting = seq(1,100,by=1)
+
+miss_GB = c(0.32756213348226754, 0.28176487014800333, 0.2523317509075677, 0.2340686958950014, 
+            0.22418318905333706, 0.2185981569394024, 0.21273387321977102, 0.20943870427254957, 0.20558503211393467,
+            0.20245741413013124, 0.19983244903658196, 0.19854789165037698, 0.19597877687796705, 0.1932979614632784, 
+            0.1927953085730243, 0.1912314995811226, 0.18782462999162244, 0.18676347388997486, 0.18441776040212232, 
+            0.18207204691426976, 0.17989388438983525, 0.17799497347109747, 0.1764870148003351, 0.17509075677185143, 
+            0.17268919296285953, 0.17028762915386764, 0.16928232337335938, 0.16810946662943313, 0.16643395699525274,
+            0.16537280089360515, 0.1631946383691706, 0.1611281764870148, 0.15950851717397374, 0.159061714604859,
+            0.15816810946662943, 0.15626919854789165, 0.15481709019826864, 0.15314158056408825, 0.1520245741413013, 
+            0.1510751186819324, 0.14934375872661268, 0.14850600390952248, 0.14688634459648142, 0.145043283998883,
+            0.14448478078748953, 0.1432560737224239, 0.14185981569394024, 0.1416922647305222, 0.13979335381178443, 
+            0.13839709578330076, 0.13711253839709578, 0.13526947779949736, 0.1344875733035465, 0.1336498184864563,
+            0.13247696174253001, 0.13108070371404634, 0.1305222005026529, 0.12934934375872661, 0.12912594247416923, 
+            0.12778553476682492, 0.1272828818765708, 0.1263334264172019, 0.12594247416922646, 0.12532812063669366, 
+            0.12471376710416085, 0.12314995811225915, 0.12186540072605417, 0.12097179558782463, 0.12125104719352137, 
+            0.12007819044959508, 0.11823512985199665, 0.11790002792516056, 0.11678302150237364, 0.11549846411616867, 
+            0.11382295448198827, 0.11287349902261938, 0.11225914549008657, 0.11147724099413571, 0.11114213906729964, 
+            0.11008098296565205, 0.10885227590058642, 0.1085730242948897, 0.10779111979893885, 0.10728846690868472, 
+            0.10645071209159453, 0.10555710695336498, 0.10494275342083217, 0.10410499860374198, 0.10360234571348785, 
+            0.10265289025411896, 0.1022060876850042, 0.10108908126221726, 0.10064227869310248, 0.1005305780508238, 
+            0.09969282323373359, 0.09919017034347948, 0.09835241552638928, 0.09824071488411058, 0.09773806199385647, 
+            0.09734710974588104)
+
+plot(length_randomforest,miss_randomforest,cex=0.5,ylim = c(0,0.5),xlab = "Number of Trees",
+     ylab = "Test Misclassification Rate",pch=4,col=24)
+lines(length_randomforest,miss_randomforest,lty=2)
+points(x = length_Extratrees, y = miss_Extratrees,cex = 0.5,pch=18,col=58)
+lines(x = length_Extratrees, y = miss_Extratrees,lty=20)
+points(x = length_boosting , y = miss_GB,cex = 0.5,pch=15,col=22)
+lines(x = length_boosting , y = miss_GB,lty = 12)
+title("Test Misclassification rate of different methods")
+legend("topright",title = "Different Methods",c("Random Forest","Extra Trees","Gradient Boosting"),pch=c(4,18,15),
+       lty = c(2,20,12),col = c(24,58,22),cex = 0.6)
+
+
+```
+
+From the plot, the test misclassification rate of **Random Forest** and **Extra Trees** start to converge 
+when number of trees are close to 20. Not surprisingly, the test misclassification rate of **Gradient Boosting**
+continues decreasing since the algorthim decides so.
+
+
+
+
+We calculate the minimum misclassification rate of each method. The best performance model's summary 
+is in the following table.
+
+\begin{table}[!htdp]
+\footnotesize
+\caption{Summary of best models through three methods}
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+\hline
+ Methods &  \textbf{Tree Number} & \textbf{Tree Depth} & \textbf{Predictor Number} & \textbf{MisclassificationRate} \\ 
+
+
+\hline
+\hline
+
+ & & & & \\
+
+   \textbf{Random Forest} & 25 &18 &9 & 0.155 \\
+            &  & & &   \\
+\textbf{Extra Trees}  &  37  &    18  &9 & 0.256  \\
+            & & & &   \\
+
+\textbf{Gradient Boosting}       &  100 & 10 &9 &  0.097 \\
+
+& & & & \\
+
+\hline
+\hline
+
+\end{tabular}
+\end{center}
+\label{t2b}
+\end{table}
+
+
+
+In this model, when tuning parameters are same across three methods, the **Gradient Boosting** gives us the 
+best performace with a test missclassification rate of 0.097. Notice that the parameter **Tree Depth** of 
+**Gradient Boosting** is smaller because we want to reduce the overfitting problem since this method always
+has this kind of risk. 
+
+## Discussion and Possible Improvement
+
+The model is grown and prune under a set of tuning parameters such as \textbf{number of trees}, 
+\textbf{depth of trees} and \textbf{number of predictors}. Each tree in the model is grown under the 
+optimized version of parameters for this particular dataset. 
+
+
+Generally, for **Gradient Boosting**, the many of the **tree number**, the better performance the model has.
+For this dataset, the **Gradient Boosting** model outperforms the other models when **tree number** 
+is roughly 35. There is always a tradeoff between variance and bias. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
